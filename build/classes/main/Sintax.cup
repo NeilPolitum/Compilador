@@ -1,0 +1,116 @@
+package main;
+
+import java_cup.runtime.Symbol;
+
+parser code
+{:
+    private Symbol s;
+    
+    public void syntax_error(Symbol s){
+        this.s = s;
+    }
+
+    public Symbol getS(){
+        return this.s;
+}
+:};
+
+terminal Comillas, Byte, Int, Char, Long, Float, Double, Cadena, If, Else,
+    Do, While, For, Igual, Suma, Resta, Multiplicacion, Division,
+    Dos_Puntos, Punto_Coma, Punto, Operador_logico,
+    Operador_relacional, Operador_atribucion, Operador_incremento,
+    Operador_booleano, Parentesis_abierto, Parentesis_cerrado,
+    Llave_abierta, Llave_cerrada, Corchete_abierto, Corchete_cerrado,
+    Main, Identificador, Numero, ERROR;
+non terminal INICIO, SENTENCIA, DECLARACION, DECLARACION_FOR, IF, IF_ELSE,
+    WHILE, DO_WHILE, FOR, SENTENCIA_BOOLEANA, SENTENCIA_FOR;
+
+start with INICIO;
+
+INICIO ::= 
+    Int Main Parentesis_abierto Parentesis_cerrado Llave_abierta SENTENCIA Llave_cerrada |
+    Main Parentesis_abierto Parentesis_cerrado Llave_abierta SENTENCIA Llave_cerrada
+;
+SENTENCIA ::= 
+    SENTENCIA DECLARACION |
+    DECLARACION |
+    SENTENCIA IF | 
+    IF |
+    SENTENCIA IF_ELSE |
+    IF_ELSE |
+    SENTENCIA WHILE |
+    WHILE |
+    SENTENCIA DO_WHILE
+    DO_WHILE |
+    SENTENCIA FOR |
+    FOR
+;
+DECLARACION ::= 
+    Int Identificador Punto_Coma | 
+    Int Identificador Operador_atribucion Numero Punto_Coma |
+    Int Identificador Igual Numero Punto_Coma |
+    Int Identificador Operador_incremento Punto_Coma | 
+    Int Operador_incremento Identificador Punto_Coma | 
+    Byte Identificador Punto_Coma | 
+    Byte Identificador Operador_atribucion Numero Punto_Coma |
+    Byte Identificador Igual Numero Punto_Coma |
+    Byte Identificador Operador_incremento Punto_Coma | 
+    Byte Operador_incremento Identificador Punto_Coma | 
+    Char Identificador Punto_Coma | 
+    Char Identificador Operador_atribucion Numero Punto_Coma |
+    Char Identificador Igual Numero Punto_Coma |
+    Char Identificador Operador_incremento Punto_Coma | 
+    Char Operador_incremento Identificador Punto_Coma | 
+    Long Identificador Punto_Coma | 
+    Long Identificador Operador_atribucion Numero Punto_Coma |
+    Long Identificador Igual Numero Punto_Coma |
+    Long Identificador Operador_incremento Punto_Coma | 
+    Long Operador_incremento Identificador Punto_Coma |
+    Float Identificador Punto_Coma | 
+    Float Identificador Operador_atribucion Numero Punto_Coma |
+    Float Identificador Igual Numero Punto_Coma |
+    Float Identificador Operador_incremento Punto_Coma | 
+    Float Operador_incremento Identificador Punto_Coma | 
+    Double Identificador Punto_Coma | 
+    Double Identificador Operador_atribucion Numero Punto_Coma |
+    Double Identificador Igual Numero Punto_Coma |
+    Double Identificador Operador_incremento Punto_Coma | 
+    Double Operador_incremento Identificador Punto_Coma | 
+    Cadena Identificador Operador_atribucion Comillas Comillas Punto_Coma |
+    Cadena Identificador Igual Comillas Comillas Punto_Coma |
+    Cadena Identificador Operador_atribucion Comillas Identificador Comillas Punto_Coma |
+    Cadena Identificador Igual Comillas Identificador Comillas Punto_Coma
+;
+IF ::= If Parentesis_abierto SENTENCIA_BOOLEANA Parentesis_cerrado Llave_abierta SENTENCIA Llave_cerrada
+;
+SENTENCIA_BOOLEANA ::= 
+    Operador_booleano | 
+    Identificador Operador_relacional Operador_booleano |
+    Identificador Operador_relacional Numero |
+    Identificador Operador_relacional Identificador |
+    Identificador Operador_relacional Comillas Comillas |
+    Identificador Operador_relacional Comillas Identificador Comillas
+;
+IF_ELSE ::= If Parentesis_abierto SENTENCIA_BOOLEANA Parentesis_cerrado Llave_abierta SENTENCIA Llave_cerrada Else Llave_abierta SENTENCIA Llave_cerrada
+;
+WHILE ::= While Parentesis_abierto SENTENCIA_BOOLEANA Parentesis_cerrado Llave_abierta SENTENCIA Llave_cerrada
+;
+DO_WHILE ::= Do Llave_abierta SENTENCIA Llave_cerrada While Parentesis_abierto SENTENCIA_BOOLEANA Parentesis_cerrado Punto_Coma
+;
+FOR ::= For Parentesis_abierto SENTENCIA_FOR Parentesis_cerrado Llave_abierta SENTENCIA Llave_cerrada
+;
+SENTENCIA_FOR ::=
+    Byte Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR |
+    Int Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR |
+    Char Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR |
+    Long Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR |
+    Float Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR |
+    Double Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR |
+    Cadena Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR |
+    Identificador Igual Numero Punto_Coma SENTENCIA_BOOLEANA Punto_Coma DECLARACION_FOR
+;
+DECLARACION_FOR ::= 
+    Identificador Operador_atribucion Numero |
+    Identificador Operador_incremento | 
+    Operador_incremento Identificador
+;

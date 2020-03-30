@@ -1,0 +1,396 @@
+arbolAlumno = []
+arbolMateria = []
+
+class Nodo:
+    def __init__(self, dato):
+        self.dato = dato
+        self.__izq, self.__der, self.__padre = None, None, None
+        self.peso = 0
+        
+    def cambiar_dato(self,num):
+        self.dato = num
+        
+    def izq(self):
+        return self.__izq
+    
+    def cambiar_izq(self, direcc):
+        if direcc is not None:
+            direcc.cambiar_padre(self)
+        self.__izq = direcc
+    
+    def der(self):
+        return self.__der
+        
+    def cambiar_der(self, direcc):
+        if direcc is not None:
+            direcc.__padre = self
+        self.__der = direcc
+    
+    def padre(self):
+        return self.__padre
+        
+    def cambiar_padre(self, direcc):
+        if direcc is not None:
+            self.__padre = direcc
+    
+    def cambiar_peso(self, num):
+        self.peso = num
+            
+class ArbolAVL:
+    def __init__(self, nombreA):
+        self.raiz = None
+        self.tamano = 0
+        self.nombreArbol = nombreA
+        self.codigo = []
+        self.nombre = []
+        
+        
+    def insertarNodo(self, num, nom):
+        longitud = len(self.codigo)
+        for i in range(longitud):
+            if num == self.codigo[i]:
+                print("El código ya existe.")
+                return
+        
+        self.codigo.append(num)
+        self.nombre.append(nom)
+        nodo = Nodo(num)
+        if self.raiz is None:
+            self.raiz = nodo
+            self.raiz.cambiar_peso(0)
+            self.tamano = 1
+            print("Agregado correctamente")
+        else:
+            padreNodo = None
+            nodoActual = self.raiz
+            
+            while nodoActual is not None:
+                padreNodo = nodoActual
+                if nodo.dato<nodoActual.dato:
+                    nodoActual = nodoActual.izq()
+                    padreNodo.cambiar_peso(padreNodo.peso + 1)
+                else:
+                    nodoActual = nodoActual.der()
+                    padreNodo.cambiar_peso(padreNodo.peso - 1)
+            if nodo.dato < padreNodo.dato:
+                padreNodo.cambiar_izq(nodo)
+            else:
+                padreNodo.cambiar_der(nodo)
+            nodo.cambiar_padre(padreNodo)
+            self.rebalancear(nodo)
+            print("Agregado correctamente")
+            self.tamano += 1
+    
+    def eliminarNodo(self, codA):
+        nodoActual = self.getRaiz()
+        padreNodo = None
+        nodo = Nodo(codA)
+        
+        while nodoActual.dato != None:
+            if nodo.dato<nodoActual.dato:
+                padreNodo = nodoActual
+                nodoActual = nodoActual.izq()
+            elif nodo.dato>nodoActual.dato:
+                padreNodo = nodoActual
+                nodoActual = nodoActual.der()
+            else: break
+            
+        if nodoActual == None:
+            print("No existe el codigo.")
+        else:
+            if nodoActual.izq() == None:
+                r = nodoActual.der()
+            elif nodoActual.der() == None:
+                r = nodoActual.izq()
+            else:
+                s = nodoActual
+                r = nodoActual.der()
+                t = r.izq()
+                while t != None:
+                    s = r
+                    r = t
+                    t = t.izq()
+                
+                if nodoActual != s:
+                    s.cambiar_izq(r.der())
+                    r.cambiar_der(nodoActual.der())
+                r.cambiar_izq(nodoActual.izq())
+        
+            if padreNodo==None:
+                self.raiz = r
+            elif nodoActual == padreNodo.izq():
+                padreNodo.cambiar_izq(r)
+            else:
+                padreNodo.cambiar_der(r)
+            
+            longitud = len(self.codigo)
+            
+            for i in range(longitud):
+                if nodoActual.dato == self.codigo[i]:
+                    del(self.codigo[i])
+                    del(self.nombre[i])
+                    break
+            
+            
+            self.rebalancear(nodo)
+            nodoActual = None
+    
+    def rebalancear(self,nodo):
+        n = nodo
+        while n is not None:
+            if n.padre()!= None:
+                padreN = n.padre()
+                if padreN.padre() != None:
+                    abuelo = padreN.padre()
+                    if abuelo.peso == 2 and padreN.peso == 1:
+                        self.rotarIzquierdas(padreN)
+                        self.reequilibrar(padreN)
+                    elif abuelo.peso == 2 and padreN.peso == -1:
+                        self.dobleRotarIzquierda(padreN)
+                        self.reequilibrar(padreN)
+                    elif abuelo.peso == -2 and padreN.peso == 1:
+                        self.dobleRotarDerecha(padreN)
+                        self.reequilibrar(padreN)
+                    elif abuelo.peso == -2 and padreN.peso == -1:
+                        self.rotarDerecha(padreN)
+                        self.reequilibrar(padreN)
+            n = n.padre()
+            
+    def reequilibrar(self,nodo):
+        print("Entra a reequilibrar")
+        cont = 0
+        abuelo = nodo.padre()
+        while abuelo.padre() != None:
+            cont+=1
+            if abuelo.padre().izq() == abuelo:
+                abuelo.padre().cambiar_peso(abuelo.padre().peso - 1)
+            else:
+                abuelo.padre().cambiar_peso(abuelo.padre().peso + 1)
+            abuelo = abuelo.padre()
+            print(cont)
+        self.rebalancear(nodo)
+            
+    def rotarIzquierda(self, nodo):
+        aux = nodo.padre().dato
+        nuevoAux = Nodo(aux)
+        nodo.padre().cambiar_dato(nodo.dato)
+        nuevoAux2 = None
+        if nodo.der() != None and nodo.padre().der() != None:
+            aux2 = nodo.padre().der().dato
+            nuevoAux2 = Nodo(aux2)
+            nuevoAux.cambiar_izq(nodo.der())
+            nuevoAux.cambiar_der(nuevoAux2)
+            nodo.padre().cambiar_der(nuevoAux)
+        elif nodo.padre().der() != None:
+            aux2 = nodo.padre().der().dato
+            nuevoAux2 = Nodo(aux2)
+            nuevoAux.cambiar_der(nuevoAux2)
+            nodo.padre().cambiar_der(nuevoAux)
+        elif nodo.der() != None:
+            nuevoAux.cambiar_izq(nodo.der())
+            nodo.padre().cambiar_der(nuevoAux)
+        else:
+            nodo.padre().cambiar_der(nuevoAux)
+        nodo.padre().cambiar_izq(nodo.izq())
+        pIzq = (nodo.padre().izq().peso
+                if (nodo.padre().izq() is not None) else 0)
+        pDer = (nodo.padre().der().peso
+                if (nodo.padre().der() is not None) else 0)
+        nodo.padre().cambiar_peso(pIzq - pDer)
+    
+        #Cambio de padres      
+        nuevoAux.cambiar_padre(nodo.padre())
+        if nuevoAux2 is not None:
+            nuevoAux2.cambiar_padre(nuevoAux)
+        if nodo.izq() is not None:
+            nodo.izq().cambiar_padre(nodo.padre())
+        
+    def rotarDerecha(self, nodo):
+        aux = nodo.padre().dato
+        nuevoAux = Nodo(aux)
+        nodo.padre().cambiar_dato(nodo.dato)
+        nuevoAux2 = None
+        if nodo.izq() != None and nodo.padre().izq() != None:
+            aux2 = nodo.padre().izq().dato
+            nuevoAux2 = Nodo(aux2)
+            nuevoAux.cambiar_der(nodo.izq())
+            nuevoAux.cambiar_izq(nuevoAux2)
+            nodo.padre().cambiar_izq(nuevoAux)
+        elif nodo.padre().izq() != None:
+            aux2 = nodo.padre().izq().dato
+            nuevoAux2 = Nodo(aux2)
+            nuevoAux.cambiar_izq(nuevoAux2)
+            nodo.padre().cambiar_izq(nuevoAux)
+        elif nodo.izq() != None:
+            nuevoAux.cambiar_der(nodo.izq())
+            nodo.padre().cambiar_izq(nuevoAux)
+        else:
+            nodo.padre().cambiar_izq(nuevoAux)
+        nodo.padre().cambiar_der(nodo.der())
+        pIzq = (nodo.padre().izq().peso
+                if (nodo.padre().izq() is not None) else 0)
+        pDer = (nodo.padre().der().peso
+                if (nodo.padre().der() is not None) else 0)
+        nodo.padre().cambiar_peso(pIzq - pDer)
+            
+        #Cambio de padres:
+        nuevoAux.cambiar_padre(nodo.padre())
+        if nuevoAux2 is not None:
+            nuevoAux2.cambiar_padre(nuevoAux)
+        if nodo.der() is not None:
+            nodo.der().cambiar_padre(nodo.padre())
+        
+    def dobleRotarIzquierda(self, nodo):
+        self.rotarDerecha(nodo.der())
+        self.rotarIzquierda(nodo)
+    
+    def dobleRotarDerecha(self, nodo):
+        self.rotarIzquierda(nodo.izq())
+        self.rotarDerecha(nodo)
+    
+    def mostrar(self, nodoActual):
+        if nodoActual is not None:
+            self.mostrar(nodoActual.izq())
+            longi = len(self.codigo)
+            for i in range(longi):
+                if nodoActual.dato == self.codigo[i]:
+                    aux = i
+            print("Código: "+str(nodoActual.dato)+", Nombre: "+self.nombre[aux]+", Peso: "+str(nodoActual.peso)+
+                  ", Padre: "+(str(nodoActual.padre().dato) if (nodoActual.padre() is not None) else "None"))
+            self.mostrar(nodoActual.der())
+            
+    def getRaiz(self):
+        return self.raiz
+    
+    def getNombre(self):
+        return self.nombreArbol
+    
+class ManejoArbol:
+    def __init__(self):
+        self.__posicion = None
+
+    def ingresarArbol(self, nombre, tipo):
+        if tipo == 1:  
+            longi = len(arbolAlumno)
+            if longi == 0:
+                arbol = ArbolAVL(nombre)
+                arbolAlumno.append(arbol)
+                print("Ingresado correctamente")
+            else:   
+                for i in range(longi):
+                    if nombre == arbolAlumno[i].getNombre():
+                        print("Ya existe un arbol con ese nombre")
+                        return
+                    arbol = ArbolAVL(nombre)
+                    arbolAlumno.append(arbol)
+                    print("Ingresado correctamente")
+        else:
+            longi = len(arbolMateria)
+            if longi == 0:
+                arbol = ArbolAVL(nombre)
+                arbolMateria.append(arbol)
+                print("Ingresado correctamente")
+            else:   
+                for i in range(longi):
+                    if nombre == arbolMateria[i].getNombre():
+                        print("Ya existe un arbol con ese nombre")
+                        return
+                    arbol = ArbolAVL(nombre)
+                    arbolMateria.append(arbol)
+                    print("Ingresado correctamente")
+            
+    def existeArbol(self, nombre, tipo):
+        if tipo == 1:
+            longi = len(arbolAlumno)
+            if longi == 0:
+                print("No existe el arbol.")
+                return False
+            else:   
+                for i in range(longi):
+                    if nombre == arbolAlumno[i].getNombre():
+                        self.__posicion = i
+                        return True
+                    print("No existe el arbol")
+                    return False
+        else:
+            longi = len(arbolMateria)
+            if longi == 0:
+                print("No existe el arbol.")
+                return False
+            else:   
+                for i in range(longi):
+                    if nombre == arbolMateria[i].getNombre():
+                        self.__posicion = i
+                        return True
+                    print("No existe el arbol")
+                    return False
+    
+    def getPosicion(self):
+        return self.__posicion
+    
+
+op = 99
+manejoArbol = ManejoArbol()
+while op != 0:
+    print("\n¿Qué desea hacer pirobo hpta?\n"
+          "1. Crear arbol de estudiantes\n"
+          "2. Insertar un estudiante\n"
+          "3. Retirar un estudiante\n"
+          "4. Listar los estudiantes\n"
+          "5. Crear arbol de materias\n"
+          "6. Insertar una materia\n"
+          "7. Retirar una materia\n"
+          "8. Listar las materias\n"
+          "0. Salir")
+    op = int(input("Digite la opcion: "))
+    
+    if op == 1:
+        nombre = raw_input("Ingrese el nombre del arbol: ")
+        manejoArbol.ingresarArbol(nombre,1)
+    
+    elif op == 2:
+        arbol = raw_input("Ingrese el nombre del arbol: ")
+        if manejoArbol.existeArbol(arbol,1):
+            pos = manejoArbol.getPosicion()
+            codA = int(input("Ingrese el codigo del alumno: "))
+            nomA = raw_input("Ingrese el nombre del alumno: ")
+            arbolAlumno[pos].insertarNodo(codA,nomA)
+        
+    elif op == 3:
+        arbol = raw_input("Ingrese el nombre del arbol: ")
+        if manejoArbol.existeArbol(arbol,1):
+            pos = manejoArbol.getPosicion()
+            codA = int(input("Ingrese el codigo del alumno: "))
+            arbolAlumno[pos].eliminarNodo(codA)
+    
+    elif op == 4:
+        arbol = raw_input("Ingrese el nombre del arbol: ")
+        if manejoArbol.existeArbol(arbol,1):
+            pos = manejoArbol.getPosicion()
+            print("Raíz: "+str(arbolAlumno[pos].getRaiz().dato))
+            arbolAlumno[pos].mostrar(arbolAlumno[pos].getRaiz())
+            
+    elif op == 5:
+        nombre = raw_input("Ingrese el nombre del arbol: ")
+        manejoArbol.ingresarArbol(nombre,2)
+    
+    elif op == 6:
+        arbol = raw_input("Ingrese el nombre del arbol: ")
+        if manejoArbol.existeArbol(arbol,2):
+            pos = manejoArbol.getPosicion()
+            codM = int(input("Ingrese el codigo de la materia: "))
+            nomM = raw_input("Ingrese el nombre de la materia: ")
+            arbolMateria[pos].insertarNodo(codM,nomM)
+            
+    elif op == 7:
+        arbol = raw_input("Ingrese el nombre del arbol: ")
+        if manejoArbol.existeArbol(arbol,2):
+            pos = manejoArbol.getPosicion()
+            codM = int(input("Ingrese el codigo de la materia: "))
+            arbolMateria[pos].eliminarNodo(codM)
+    
+    elif op == 8:
+        arbol = raw_input("Ingrese el nombre del arbol: ")
+        if manejoArbol.existeArbol(arbol,2):
+            pos = manejoArbol.getPosicion()
+            arbolMateria[pos].mostrar(arbolMateria[pos].getRaiz())
